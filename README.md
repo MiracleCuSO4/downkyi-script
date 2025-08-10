@@ -20,11 +20,11 @@
 
    ![image-20250810231126269](assets/image-20250810231126269.png)
 
-3. 在左侧找到Cookies，选择https://www.bilibili.com/，在右侧依次找到并复制SESSDATA，BILI_JCT，DedeUserID，DedeUserIDCkMd5的值，填入刚才打开的脚本窗口
+3. 在左侧找到Cookies，选择`https://www.bilibili.com/` ，在右侧依次找到并复制SESSDATA，BILI_JCT，DedeUserID，DedeUserIDCkMd5的值，填入刚才打开的脚本窗口
 
    ![image-20250810231500864](assets/image-20250810231500864.png)
    
-   4. 脚本成功执行后将在`.\DownKyi-1.6.1\Config\`目录生成`Login`文件，再打开原`DownKyi.exe`即可获得登录状态
+4. 脚本成功执行后将在`.\DownKyi-1.6.1\Config\`目录生成`Login`文件，再打开原`DownKyi.exe`即可获得登录状态
    
    ## 参考
    
