@@ -12,6 +12,17 @@ param(
 # Disable localized messages; keep ASCII output
 $ErrorActionPreference = "Stop"
 
+# Gets the directory where the scripts are located
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+if (-not $scriptDir) {
+    $scriptDir = $PWD.Path
+}
+
+# Make sure the output path is based on the scripts directory and not the current working directory
+if (-not [System.IO.Path]::IsPathRooted($OutPath)) {
+    $OutPath = [System.IO.Path]::Combine($scriptDir, $OutPath)
+}
+
 function Get-MachineCode {
   $mb = (Get-CimInstance Win32_BaseBoard).SerialNumber
   $cpu = (Get-CimInstance Win32_Processor | Select-Object -First 1).ProcessorId
@@ -167,13 +178,15 @@ function Decrypt-File([string]$InFile,[string]$OutFile,[string]$Password){
   return $details
 }
 
+Write-Host ("ScriptDir: {0}" -f $scriptDir)
+Write-Host ("WorkDir: {0}" -f (Get-Location).Path)
+Write-Host ("OutPath: {0}" -f $OutPath)
+
 # 1) machine code and password
 $mc = Get-MachineCode
 $secretKey = 'EsOat*^y1QR!&0J6'   # single-quoted to avoid &
 $secret = $secretKey + $mc.MachineCode
 
-Write-Host ("cwd: {0}" -f (Get-Location))
-Write-Host ("out: {0}" -f ([System.IO.Path]::GetFullPath($OutPath)))
 Write-Host ("mb : {0}" -f $mc.MainBoard)
 Write-Host ("cpu: {0}" -f $mc.CPU)
 Write-Host ("mc : {0}" -f $mc.MachineCode)
@@ -196,9 +209,16 @@ Write-Host ("lSize(plain): {0} bytes" -f $plainLen)
 
 # 3) encrypt -> OutPath
 $destDir = Split-Path -Parent $OutPath
-if ($destDir -and -not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir | Out-Null }
-if (Test-Path $OutPath) { Remove-Item $OutPath -Force }
+if ($destDir -and -not (Test-Path $destDir)) {
+    Write-Host ("create dir: {0}" -f $destDir)
+    New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+}
+if (Test-Path $OutPath) {
+    Write-Host ("delete exist file: {0}" -f $OutPath)
+    Remove-Item $OutPath -Force
+}
 Encrypt-File -InFile $tmp -OutFile $OutPath -Password $secret
+Write-Host ("create file: {0}" -f $OutPath)
 $encLen = (Get-Item $OutPath).Length
 Write-Host ("enc.size: {0} bytes" -f $encLen)
 
